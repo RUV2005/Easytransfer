@@ -3,15 +3,28 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
+import 'package:provider/provider.dart';
+import 'language_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => LanguageProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  String _currentLocale = 'zh'; // 默认语言
 
   @override
   Widget build(BuildContext context) {
@@ -36,10 +49,17 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
           ),
           themeMode: followSystemTheme ? ThemeMode.system : ThemeMode.light,
+          locale: Locale(_currentLocale), // 使用当前语言
           home: const MyHomePage(),
         );
       },
     );
+  }
+
+  void updateLocale(String locale) {
+    setState(() {
+      _currentLocale = locale;
+    });
   }
 }
 
@@ -72,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final List<Widget> _pages = const [
     Center(child: Text('主页', style: TextStyle(fontSize: 24))),
-    Center(child: Text('文件传输', style: TextStyle(fontSize: 24))),
+    FileTransferPage(),
     Center(child: Text('接收文件', style: TextStyle(fontSize: 24))),
     Center(child: Text('剪切板共享', style: TextStyle(fontSize: 24))),
     FileManager(),
@@ -122,6 +142,101 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+
+class FileTransferPage extends StatelessWidget {
+  const FileTransferPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0), // 增加整体间距
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch, // 使按钮宽度填满
+        children: [
+          Container(
+            padding: const EdgeInsets.all(5.0),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.blue),
+              borderRadius: BorderRadius.circular(12.0),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    // 媒体按钮的逻辑
+                    final result = await FilePicker.platform.pickFiles(
+                      type: FileType.media,
+                    );
+                    _handleFileSelection(result);
+                  },
+                  child: const Text('媒体'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    // 文件按钮的逻辑
+                    final result = await FilePicker.platform.pickFiles(
+                      type: FileType.any,
+                    );
+                    _handleFileSelection(result);
+                  },
+                  child: const Text('文件'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    // 文件夹按钮的逻辑
+                    _selectDirectory(context);
+                  },
+                  child: const Text('文件夹'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    // 应用按钮的逻辑
+                    final result = await FilePicker.platform.pickFiles(
+                      type: FileType.custom,
+                      allowedExtensions: ['apk'], // 允许选择应用文件
+                    );
+                    _handleFileSelection(result);
+                  },
+                  child: const Text('应用'),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleFileSelection(FilePickerResult? result) {
+    if (result != null && result.files.isNotEmpty) {
+      // 处理选择的文件
+      final file = result.files.first;
+      print('选中的文件: ${file.name}');
+    } else {
+      print('未选择任何文件');
+    }
+  }
+
+  void _selectDirectory(BuildContext context) async {
+    print('请手动选择文件夹');
+
+    // 在这里使用pickFiles进行选择
+    final result = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.any,
+    );
+
+    if (result != null && result.paths.isNotEmpty) {
+      final path = result.paths.first;
+      print('选中的文件夹: $path');
+      // 这里可以添加进一步的处理逻辑
+    } else {
+      print('未选择任何文件夹');
+    }
+  }
+}
+
 class FileManager extends StatefulWidget {
   const FileManager({Key? key}) : super(key: key);
 
@@ -147,7 +262,7 @@ class _FileManagerState extends State<FileManager> {
       status = await Permission.storage.status;
     }
     if (status.isGranted) {
-      _appFolderPath = '${Directory('/storage/emulated/0/Download').path}/Easytrasfer'; // 应用文件夹路径
+      _appFolderPath = '${Directory('/storage/emulated/0/Download').path}/Easytransfer'; // 应用文件夹路径
       await _createAppFolder(); // 创建文件夹
       _listFiles(); // 列出文件
     } else {
@@ -298,7 +413,9 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool _followSystemTheme = true;
   bool _notificationsEnabled = true;
-  String _selectedLanguage = 'English';
+  String _selectedLanguage = '简体中文';
+  String _selectedTransferMode = 'WLAN 直连';
+  final List<String> _transferModes = ['WLAN 直连', 'WiFi 模式', '热点模式'];
 
   @override
   void initState() {
@@ -310,8 +427,21 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       _followSystemTheme = true;
       _notificationsEnabled = true;
-      _selectedLanguage = 'English';
+      _selectedLanguage = '简体中文';
+      _selectedTransferMode = 'WLAN 直连';
     });
+  }
+
+  Widget _buildSettingItem(Widget child) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.all(5.0),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.blueAccent),
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: child,
+    );
   }
 
   @override
@@ -321,44 +451,73 @@ class _SettingsPageState extends State<SettingsPage> {
         title: const Text('设置', style: TextStyle(fontSize: 20)),
       ),
       body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        padding: const EdgeInsets.all(16.0),
         child: ListView(
           padding: const EdgeInsets.all(8.0),
           children: [
-            SwitchListTile(
-              title: const Text('跟随系统切换主题'),
-              value: _followSystemTheme,
-              onChanged: (bool value) {
-                setState(() {
-                  _followSystemTheme = value;
-                  ThemeNotifier.instance.saveSettings(_followSystemTheme);
-                });
-              },
+            _buildSettingItem(
+              SwitchListTile(
+                title: const Text('跟随系统切换主题'),
+                value: _followSystemTheme,
+                onChanged: (bool value) {
+                  setState(() {
+                    _followSystemTheme = value;
+                    ThemeNotifier.instance.saveSettings(_followSystemTheme);
+                  });
+                },
+              ),
             ),
-            const Divider(),
-            SwitchListTile(
-              title: const Text('启用通知'),
-              value: _notificationsEnabled,
-              onChanged: (bool value) {
-                setState(() {
-                  _notificationsEnabled = value;
-                });
-              },
+            _buildSettingItem(
+              SwitchListTile(
+                title: const Text('启用通知'),
+                value: _notificationsEnabled,
+                onChanged: (bool value) {
+                  setState(() {
+                    _notificationsEnabled = value;
+                  });
+                },
+              ),
             ),
-            const Divider(),
-            ListTile(
-              title: const Text('选择语言'),
-              subtitle: Text(_selectedLanguage),
-              onTap: () {
-                _showLanguageDialog();
-              },
+            _buildSettingItem(
+              ListTile(
+                title: const Text('选择语言'),
+                subtitle: Text(_selectedLanguage),
+                onTap: () {
+                  _showLanguageDialog();
+                },
+              ),
             ),
-            const Divider(),
-            TextButton(
-              onPressed: _resetSettings,
-              child: const Text('重置所有设置'),
+            _buildSettingItem(
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('文件传输模式'),
+                    DropdownButton<String>(
+                      value: _selectedTransferMode,
+                      items: _transferModes.map((String mode) {
+                        return DropdownMenuItem<String>(
+                          value: mode,
+                          child: Text(mode),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedTransferMode = newValue!;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const Divider(),
+            _buildSettingItem(
+              TextButton(
+                onPressed: _resetSettings,
+                child: const Text('重置所有设置'),
+              ),
+            ),
           ],
         ),
       ),
@@ -375,19 +534,19 @@ class _SettingsPageState extends State<SettingsPage> {
             child: ListBody(
               children: [
                 ListTile(
-                  title: const Text('English'),
+                  title: const Text('简体中文'),
                   onTap: () {
                     setState(() {
-                      _selectedLanguage = 'English';
+                      _selectedLanguage = '简体中文';
                     });
                     Navigator.of(context).pop();
                   },
                 ),
                 ListTile(
-                  title: const Text('中文'),
+                  title: const Text('English'),
                   onTap: () {
                     setState(() {
-                      _selectedLanguage = '中文';
+                      _selectedLanguage = 'English';
                     });
                     Navigator.of(context).pop();
                   },
