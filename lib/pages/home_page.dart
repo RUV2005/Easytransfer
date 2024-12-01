@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'transfer_page.dart';
-import 'file_transfer_page.dart'; // 确保导入
-import 'file_manager_page.dart';
+import 'file_transfer_page.dart';
+import 'file_select_page.dart'; // 确保导入
 import 'settings_page.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -17,9 +16,6 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Widget> _pages = const [
     TransferPage(),
     TransferFilesPage(deviceName: 'Device', deviceIp: '192.168.1.1'), // 使用正确的类名
-    Center(child: Text('接收文件', style: TextStyle(fontSize: 24))),
-    Center(child: Text('剪切板共享', style: TextStyle(fontSize: 24))),
-    FileManager(),
     SettingsPage(),
   ];
 
@@ -40,9 +36,6 @@ class _MyHomePageState extends State<MyHomePage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: '主页'),
           BottomNavigationBarItem(icon: Icon(Icons.upload_file), label: '文件传输'),
-          BottomNavigationBarItem(icon: Icon(Icons.download), label: '接收文件'),
-          BottomNavigationBarItem(icon: Icon(Icons.share), label: '剪切板共享'),
-          BottomNavigationBarItem(icon: Icon(Icons.folder), label: '文件管理'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: '设置'),
         ],
         currentIndex: _selectedIndex,
