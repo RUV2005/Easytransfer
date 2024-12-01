@@ -1,3 +1,4 @@
+import 'package:easytransfer/transfer_files.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -91,7 +92,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = const [
-    Center(child: Text('主页', style: TextStyle(fontSize: 24))),
+    TransferPage(),
     FileTransferPage(),
     Center(child: Text('接收文件', style: TextStyle(fontSize: 24))),
     Center(child: Text('剪切板共享', style: TextStyle(fontSize: 24))),
