@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/theme_notifier.dart';
+import '../widgets/wifi_direct_plugin.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -20,6 +21,11 @@ class _SettingsPageState extends State<SettingsPage> {
   void initState() {
     super.initState();
     _followSystemTheme = ThemeNotifier.instance.value; // 获取当前主题设置
+  }
+
+  void _debug(){
+    Navigator.push(context,
+        MaterialPageRoute(builder: (context) => const WifiDirectPage()));
   }
 
   void _resetSettings() {
@@ -113,6 +119,12 @@ class _SettingsPageState extends State<SettingsPage> {
               TextButton(
                 onPressed: _resetSettings,
                 child: const Text('重置所有设置'),
+              ),
+            ),
+            _buildSettingItem(
+              TextButton(
+                onPressed: _debug,
+                child: const Text('调试页面'),
               ),
             ),
           ],
