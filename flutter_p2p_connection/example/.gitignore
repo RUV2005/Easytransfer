@@ -6,3 +6,4 @@ coverage
 lib/src/generated
 test/generated
 android/local.properties
+android/.gradle
