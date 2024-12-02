@@ -9,9 +9,7 @@ class WifiDirectPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: MyHomePage(),
-    );
+    return const MyHomePage();
   }
 }
 
@@ -146,6 +144,7 @@ class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
   }
 
   Future sendFile(bool phone) async {
+    _pickFile();
     String? filePath = pickedFile?.path;
     if (filePath == null) return;
     List<TransferUpdate>? updates =
