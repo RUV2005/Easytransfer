@@ -20,6 +20,8 @@ dependencies:
   provider: ^6.0.0
   network_info_plus: ^5.0.0
   device_info_plus: ^9.0.0
+  wifi_direct_plugin:
+    path: ./wifi_direct_plugin
   flutter_localizations:
     sdk: flutter
 
