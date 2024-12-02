@@ -1,5 +1,7 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:convert';
+import 'dart:io'; // 仅在非 Web 平台使用
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
@@ -30,25 +32,32 @@ class _TransferPageState extends State<TransferPage> {
       if (event == RawSocketEvent.read) {
         Datagram? datagram = receiver.receive();
         if (datagram != null) {
-          final message = String.fromCharCodes(datagram.data);
-          final ip = datagram.address.address;
-          if (ip != await _getCurrentIP()) {
-            final parts = message.split(';');
-            String deviceBrand = parts.length > 1 ? parts[1].replaceFirst('Brand:', '') : '未知品牌';
-            String deviceModel = parts.length > 2 ? parts[2].replaceFirst('Model:', '') : '未知型号';
+          print('Received raw data: ${datagram.data}'); // 打印原始数据
+          try {
+            final message = utf8.decode(datagram.data, allowMalformed: true);
+            final ip = datagram.address.address;
 
-            // 进行去重检查
-            if (!devices.any((device) => device['ip'] == ip)) {
-              setState(() {
-                devices.add({
-                  'ip': ip,
-                  'port': '22473',
-                  'status': '响应',
-                  'brand': deviceBrand,
-                  'model': deviceModel
+            if (ip != await _getCurrentIP()) {
+              final parts = message.split(';');
+              String deviceBrand = parts.length > 1 ? parts[1].replaceFirst('Brand:', '') : '未知品牌';
+              String deviceModel = parts.length > 2 ? parts[2].replaceFirst('Model:', '') : '未知型号';
+
+              // 进行去重检查
+              if (!devices.any((device) => device['ip'] == ip)) {
+                setState(() {
+                  devices.add({
+                    'ip': ip,
+                    'port': '22473',
+                    'status': '响应',
+                    'brand': deviceBrand,
+                    'model': deviceModel
+                  });
                 });
-              });
+              }
             }
+          } catch (e) {
+            print('Failed to decode data: $e'); // 处理解码失败
+            return; // 跳过此无效数据
           }
         }
       }
@@ -61,36 +70,47 @@ class _TransferPageState extends State<TransferPage> {
       devices.clear(); // 清空设备列表以便重新扫描
     });
 
-    String? wifiIP = await _getCurrentIP();
-    if (wifiIP == null) {
-      setState(() {
-        isScanning = false;
-      });
-      return;
-    }
-
-    String subnet = wifiIP.substring(0, wifiIP.lastIndexOf('.')) + '.';
-
-    // 启动持续的广播发送
-    Timer.periodic(Duration(milliseconds: 100), (timer) async {
-      for (int i = 1; i < 255; i++) {
-        String address = subnet + i.toString();
-        await sendBroadcast(address);
+    if (kIsWeb) {
+      // Web 平台的逻辑（如果需要的话）
+      return; // 目前不支持 Windows 的广播发送
+    } else {
+      // 在非 Web 平台（如 Windows）获取当前 IP
+      String? wifiIP = await _getCurrentIP();
+      if (wifiIP == null) {
+        setState(() {
+          isScanning = false;
+        });
+        return;
       }
-    });
 
-    // 设置扫描超时
-    scanTimer = Timer(Duration(seconds: 5), () {
-      stopScanning();
-    });
+      String broadcastAddress = await getBroadcastAddress(wifiIP);
+
+      // 启动持续的广播发送
+      Timer.periodic(Duration(milliseconds: 100), (timer) async {
+        await sendBroadcast(broadcastAddress); // 使用动态计算的广播地址
+      });
+
+      // 设置扫描超时
+      scanTimer = Timer(Duration(seconds: 5), () {
+        stopScanning();
+      });
+    }
   }
 
   Future<void> sendBroadcast(String address) async {
-    String deviceBrand = await _getDeviceBrand();
-    String deviceModel = await _getDeviceModel();
-    String message = 'Hello from Flutter;Brand:$deviceBrand;Model:$deviceModel';
+    String message;
+
+    // 仅在非 Web 平台使用 Platform 属性
+    if (Platform.isWindows) {
+      message = 'Hello from Windows;Brand:Windows;Model:PC';
+    } else {
+      String deviceBrand = await _getDeviceBrand();
+      String deviceModel = await _getDeviceModel();
+      message = 'Hello from Flutter;Brand:$deviceBrand;Model:$deviceModel';
+    }
+
     RawDatagramSocket sender = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
-    sender.send(message.codeUnits, InternetAddress(address), 22473);
+    sender.send(utf8.encode(message), InternetAddress(address), 22473); // 发送到指定地址
     sender.close();
   }
 
@@ -129,6 +149,11 @@ class _TransferPageState extends State<TransferPage> {
     return model;
   }
 
+  Future<String> getBroadcastAddress(String ip) async {
+    List<String> parts = ip.split('.');
+    return '${parts[0]}.${parts[1]}.${parts[2]}.255'; // 假设使用的子网掩码是 255.255.255.0
+  }
+
   void stopScanning() {
     setState(() {
       isScanning = false;
@@ -147,7 +172,7 @@ class _TransferPageState extends State<TransferPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('UDP 发现'),
+        title: const Text('设备发现'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
