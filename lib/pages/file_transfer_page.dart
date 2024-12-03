@@ -32,36 +32,38 @@ class _TransferPageState extends State<TransferPage> {
       if (event == RawSocketEvent.read) {
         Datagram? datagram = receiver.receive();
         if (datagram != null) {
-          print('Received raw data: ${datagram.data}'); // 打印原始数据
-          try {
-            final message = utf8.decode(datagram.data, allowMalformed: true);
-            final ip = datagram.address.address;
-
-            if (ip != await _getCurrentIP()) {
-              final parts = message.split(';');
-              String deviceBrand = parts.length > 1 ? parts[1].replaceFirst('Brand:', '') : '未知品牌';
-              String deviceModel = parts.length > 2 ? parts[2].replaceFirst('Model:', '') : '未知型号';
-
-              // 进行去重检查
-              if (!devices.any((device) => device['ip'] == ip)) {
-                setState(() {
-                  devices.add({
-                    'ip': ip,
-                    'port': '22473',
-                    'status': '响应',
-                    'brand': deviceBrand,
-                    'model': deviceModel
-                  });
-                });
-              }
-            }
-          } catch (e) {
-            print('Failed to decode data: $e'); // 处理解码失败
-            return; // 跳过此无效数据
-          }
+          _handleReceivedData(datagram);
         }
       }
     });
+  }
+
+  void _handleReceivedData(Datagram datagram) async {
+    try {
+      final message = utf8.decode(datagram.data, allowMalformed: true);
+      final ip = datagram.address.address;
+
+      if (ip != await _getCurrentIP()) {
+        final parts = message.split(';');
+        String deviceBrand = parts.length > 1 ? parts[1].replaceFirst('Brand:', '') : '未知品牌';
+        String deviceModel = parts.length > 2 ? parts[2].replaceFirst('Model:', '') : '未知型号';
+
+        // 进行去重检查
+        if (!devices.any((device) => device['ip'] == ip)) {
+          setState(() {
+            devices.add({
+              'ip': ip,
+              'port': '22473',
+              'status': '响应',
+              'brand': deviceBrand,
+              'model': deviceModel
+            });
+          });
+        }
+      }
+    } catch (e) {
+      print('Failed to decode data: $e'); // 处理解码失败
+    }
   }
 
   Future<void> scanNetwork() async {
@@ -71,7 +73,7 @@ class _TransferPageState extends State<TransferPage> {
     });
 
     if (kIsWeb) {
-      // Web 平台的逻辑（如果需要的话）
+      // Web 平台的逻辑
       return; // 目前不支持 Windows 的广播发送
     } else {
       // 在非 Web 平台（如 Windows）获取当前 IP
@@ -86,14 +88,12 @@ class _TransferPageState extends State<TransferPage> {
       String broadcastAddress = await getBroadcastAddress(wifiIP);
 
       // 启动持续的广播发送
-      Timer.periodic(Duration(milliseconds: 100), (timer) async {
+      Timer.periodic(Duration(seconds: 1), (timer) async {
         await sendBroadcast(broadcastAddress); // 使用动态计算的广播地址
       });
 
       // 设置扫描超时
-      scanTimer = Timer(Duration(seconds: 5), () {
-        stopScanning();
-      });
+      scanTimer = Timer(Duration(seconds: 5), stopScanning);
     }
   }
 
