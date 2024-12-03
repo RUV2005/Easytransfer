@@ -26,7 +26,7 @@ class _TransferFilesPageState extends State<TransferFilesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Transfer Files to ${widget.deviceName}')),
+      appBar: AppBar(title: Text('传输文件至 ${widget.deviceName}')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
