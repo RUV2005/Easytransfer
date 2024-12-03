@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:network_info_plus/network_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'file_select_page.dart'; // 确保导入 file_select_page
 
 class TransferPage extends StatefulWidget {
   const TransferPage({Key? key}) : super(key: key);
@@ -172,7 +173,7 @@ class _TransferPageState extends State<TransferPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('设备发现'),
+        title: const Text('文件发送'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -187,24 +188,38 @@ class _TransferPageState extends State<TransferPage> {
           : ListView.builder(
         itemCount: devices.length,
         itemBuilder: (context, index) {
-          return Card(
-            margin: const EdgeInsets.all(10.0),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(devices[index]['ip'] ?? '未知 IP'),
-                      Text('端口: 22473'),
-                      Text('状态: ${devices[index]['status'] ?? '未知'}'),
-                      Text('品牌: ${devices[index]['brand'] ?? '未知品牌'}'),
-                      Text('型号: ${devices[index]['model'] ?? '未知型号'}'),
-                    ],
+          return GestureDetector(
+            onTap: () {
+              // 点击设备列表项时跳转到 file_select_page
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TransferFilesPage(
+                    deviceName: devices[index]['brand'] ?? '未知品牌',
+                    deviceIp: devices[index]['ip'] ?? '未知 IP',
                   ),
-                ],
+                ),
+              );
+            },
+            child: Card(
+              margin: const EdgeInsets.all(10.0),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(devices[index]['ip'] ?? '未知 IP'),
+                        Text('端口: 22473'),
+                        Text('状态: ${devices[index]['status'] ?? '未知'}'),
+                        Text('品牌: ${devices[index]['brand'] ?? '未知品牌'}'),
+                        Text('型号: ${devices[index]['model'] ?? '未知型号'}'),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           );

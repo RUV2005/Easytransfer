@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../widgets/theme_notifier.dart';
 import '../widgets/wifi_direct_plugin.dart';
 
@@ -23,7 +22,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _followSystemTheme = ThemeNotifier.instance.value; // 获取当前主题设置
   }
 
-  void _debug(){
+  void _debug() {
     Navigator.push(context,
         MaterialPageRoute(builder: (context) => const WifiDirectPage()));
   }
@@ -60,7 +59,10 @@ class _SettingsPageState extends State<SettingsPage> {
           children: [
             _buildSettingItem(
               SwitchListTile(
-                title: const Text('跟随系统切换主题'),
+                title: Text(
+                  '跟随系统切换主题',
+                  style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400), // 使用较小字体和统一粗细
+                ),
                 value: _followSystemTheme,
                 onChanged: (bool value) {
                   setState(() {
@@ -72,7 +74,10 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             _buildSettingItem(
               SwitchListTile(
-                title: const Text('启用通知'),
+                title: Text(
+                  '启用通知',
+                  style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400), // 使用较小字体和统一粗细
+                ),
                 value: _notificationsEnabled,
                 onChanged: (bool value) {
                   setState(() {
@@ -83,8 +88,14 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
             _buildSettingItem(
               ListTile(
-                title: const Text('选择语言'),
-                subtitle: Text(_selectedLanguage),
+                title: Text(
+                  '选择语言',
+                  style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400), // 使用较小字体和统一粗细
+                ),
+                subtitle: Text(
+                  _selectedLanguage,
+                  style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400), // 使用较小字体和统一粗细
+                ),
                 onTap: () {
                   _showLanguageDialog();
                 },
@@ -96,13 +107,19 @@ class _SettingsPageState extends State<SettingsPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('文件传输模式'),
+                    Text(
+                      '文件传输模式',
+                      style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400), // 使用较小字体和统一粗细
+                    ),
                     DropdownButton<String>(
                       value: _selectedTransferMode,
                       items: _transferModes.map((String mode) {
                         return DropdownMenuItem<String>(
                           value: mode,
-                          child: Text(mode),
+                          child: Text(
+                            mode,
+                            style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400), // 使用较小字体和统一粗细
+                          ),
                         );
                       }).toList(),
                       onChanged: (String? newValue) {
@@ -118,13 +135,19 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildSettingItem(
               TextButton(
                 onPressed: _resetSettings,
-                child: const Text('重置所有设置'),
+                child: Text(
+                  '重置所有设置',
+                  style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400), // 使用较小字体和统一粗细
+                ),
               ),
             ),
             _buildSettingItem(
               TextButton(
                 onPressed: _debug,
-                child: const Text('调试页面'),
+                child: Text(
+                  '调试页面',
+                  style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400), // 使用较小字体和统一粗细
+                ),
               ),
             ),
           ],
@@ -143,7 +166,7 @@ class _SettingsPageState extends State<SettingsPage> {
             child: ListBody(
               children: [
                 ListTile(
-                  title: const Text('简体中文'),
+                  title: const Text('简体中文', style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400)), // 使用较小字体和统一粗细
                   onTap: () {
                     setState(() {
                       _selectedLanguage = '简体中文';
@@ -152,7 +175,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                 ),
                 ListTile(
-                  title: const Text('English'),
+                  title: const Text('English', style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400)), // 使用较小字体和统一粗细
                   onTap: () {
                     setState(() {
                       _selectedLanguage = 'English';
@@ -165,7 +188,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           actions: [
             TextButton(
-              child: const Text('取消'),
+              child: const Text('取消', style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400)), // 使用较小字体和统一粗细
               onPressed: () {
                 Navigator.of(context).pop();
               },

@@ -31,7 +31,7 @@ class _TransferFilesPageState extends State<TransferFilesPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(onPressed: _pickFile, child: const Text('Add File')),
+            ElevatedButton(onPressed: _pickFile, child: const Text('添加文件')),
             if (pickedFile != null) Text('Selected file: ${pickedFile!.name}'),
           ],
         ),

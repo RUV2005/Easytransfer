@@ -46,9 +46,9 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: '主页'),
-          BottomNavigationBarItem(icon: Icon(Icons.upload_file), label: '文件传输'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '设置'),
+          BottomNavigationBarItem(icon: Icon(Icons.send), label: '文件发送'), // 更改为发送图标
+          BottomNavigationBarItem(icon: Icon(Icons.download), label: '文件接收'), // 更改为下载图标
+          BottomNavigationBarItem(icon: Icon(Icons.settings), label: '设置'), // 保持设置图标
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped, // 点击导航栏时调用
