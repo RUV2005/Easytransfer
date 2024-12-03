@@ -60,6 +60,20 @@ class _SettingsPageState extends State<SettingsPage> {
             _buildSettingItem(
               SwitchListTile(
                 title: Text(
+                  '启用通知',
+                  style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400), // 使用较小字体和统一粗细
+                ),
+                value: _notificationsEnabled,
+                onChanged: (bool value) {
+                  setState(() {
+                    _notificationsEnabled = value;
+                  });
+                },
+              ),
+            ),
+            _buildSettingItem(
+              SwitchListTile(
+                title: Text(
                   '跟随系统切换主题',
                   style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400), // 使用较小字体和统一粗细
                 ),
@@ -68,20 +82,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   setState(() {
                     _followSystemTheme = value;
                     ThemeNotifier.instance.saveSettings(_followSystemTheme);
-                  });
-                },
-              ),
-            ),
-            _buildSettingItem(
-              SwitchListTile(
-                title: Text(
-                  '启用通知',
-                  style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w400), // 使用较小字体和统一粗细
-                ),
-                value: _notificationsEnabled,
-                onChanged: (bool value) {
-                  setState(() {
-                    _notificationsEnabled = value;
                   });
                 },
               ),
