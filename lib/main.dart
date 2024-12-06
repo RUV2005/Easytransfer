@@ -1,8 +1,8 @@
 import 'dart:io'; // 添加此导入以检查平台
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'pages/home_page.dart';
-import 'pages/language_provider.dart';
+import '../wifi_mode/pages/home_page.dart';
+import '../wifi_mode/pages/language_provider.dart';
 import 'widgets/theme_notifier.dart';
 import 'package:window_size/window_size.dart'; // 导入 window_size 包
 

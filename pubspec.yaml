@@ -21,6 +21,8 @@ dependencies:
   network_info_plus: ^5.0.0
   device_info_plus: ^9.0.0
   window_size: ^0.1.0  # 使用已知的兼容版本
+  nsd: ^2.0.0  # 使用适合你的 Flutter 版本的最新版本
+  flutter_speed_dial: ^5.0.0  # 请检查最新版本
   flutter_localizations:
     sdk: flutter
   flutter_p2p_connection:
